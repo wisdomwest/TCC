@@ -1,0 +1,45 @@
+#!/usr/bin/python3
+"""
+Contains the API endpoints for managing branches.
+"""
+
+from flask import Blueprint, request, jsonify
+from models.tables import Branch
+from models import storage
+
+branches_bp = Blueprint('branches_bp', __name__)
+
+@branches_bp.route('/', methods=['POST'])
+def create_branch():
+    """
+    Creates a new branch.
+    """
+    data = request.get_json()
+    if not data or not data.get('name'):
+        return jsonify({"error": "Missing branch name"}), 400
+
+    new_branch = Branch(
+        name=data['name'],
+        is_hq=data.get('is_hq', False)
+    )
+    storage.new(new_branch)
+    storage.save()
+    return jsonify(new_branch.to_dict()), 201
+
+@branches_bp.route('/', methods=['GET'])
+def get_branches():
+    """
+    Retrieves all branches.
+    """
+    branches = storage.all(Branch).values()
+    return jsonify([branch.to_dict() for branch in branches])
+
+@branches_bp.route('/<branch_id>', methods=['GET'])
+def get_branch(branch_id):
+    """
+    Retrieves a specific branch.
+    """
+    branch = storage.get(Branch, id=branch_id)
+    if not branch:
+        return jsonify({"error": "Branch not found"}), 404
+    return jsonify(branch.to_dict())
