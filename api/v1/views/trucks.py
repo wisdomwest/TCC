@@ -99,6 +99,10 @@ def get_truck_usage():
 def get_average_idle_time():
     """
     Calculates the average idle time for trucks.
+    ---
+    responses:
+      200:
+        description: The average idle time of trucks in seconds.
     """
     trucks = storage.all(Truck).values()
     total_idle_time = timedelta()

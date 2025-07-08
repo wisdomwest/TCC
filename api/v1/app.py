@@ -13,6 +13,7 @@ from api.v1.views.dispatches import dispatches_bp
 from models import storage
 
 app = Flask(__name__)
+Swagger(app)
 
 # Register blueprints
 app.register_blueprint(users_bp, url_prefix='/api/v1/users')

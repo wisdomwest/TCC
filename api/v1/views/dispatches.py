@@ -21,6 +21,17 @@ def get_dispatches():
 def get_dispatch(dispatch_id):
     """
     Retrieves a specific dispatch.
+    ---
+    parameters:
+      - name: dispatch_id
+        in: path
+        type: string
+        required: true
+    responses:
+      200:
+        description: The requested dispatch.
+      404:
+        description: Dispatch not found.
     """
     dispatch = storage.get(Dispatch, id=dispatch_id)
     if not dispatch:

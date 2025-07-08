@@ -37,6 +37,25 @@ def register_user():
 def login_user():
     """
     Logs in a user.
+    ---
+    parameters:
+      - name: body
+        in: body
+        required: true
+        schema:
+          type: object
+          properties:
+            username:
+              type: string
+            password:
+              type: string
+    responses:
+      200:
+        description: Login successful.
+      400:
+        description: Missing username or password.
+      401:
+        description: Invalid username or password.
     """
     data = request.get_json()
     if not data or not data.get('username') or not data.get('password'):

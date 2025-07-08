@@ -83,6 +83,18 @@ def get_consignment_status(consignment_id):
 def get_consignment_stats():
     """
     Retrieves consignment statistics.
+    ---
+    parameters:
+      - name: destination
+        in: query
+        type: string
+        required: true
+        description: The destination to filter by.
+    responses:
+      200:
+        description: Consignment statistics for the given destination.
+      400:
+        description: Missing destination.
     """
     destination = request.args.get('destination')
     if not destination:
@@ -98,6 +110,30 @@ def get_consignment_stats():
         "total_volume": total_volume,
         "total_revenue": total_revenue
     })
+
+@consignments_bp.route('/average_wait_time', methods=['GET'])
+def get_average_wait_time():
+    """
+    Calculates the average waiting time for consignments.
+    ---
+    responses:
+      200:
+        description: The average waiting time for consignments in seconds.
+    """
+    consignments = storage.all(Consignment).values()
+    total_wait_time = timedelta()
+    dispatched_consignments = 0
+
+    for consignment in consignments:
+        if consignment.status != ConsignmentStatus.AWAITING_DISPATCH:
+            dispatch_time = consignment.dispatch.created_at
+            wait_time = dispatch_time - consignment.created_at
+            total_wait_time += wait_time
+            dispatched_consignments += 1
+    
+    average_wait_time = total_wait_time / dispatched_consignments if dispatched_consignments > 0 else 0
+
+    return jsonify({"average_wait_time_seconds": average_wait_time.total_seconds()})
 
 def check_and_dispatch_truck(branch_id, destination_address):
     """

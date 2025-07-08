@@ -38,6 +38,17 @@ def get_branches():
 def get_branch(branch_id):
     """
     Retrieves a specific branch.
+    ---
+    parameters:
+      - name: branch_id
+        in: path
+        type: string
+        required: true
+    responses:
+      200:
+        description: The requested branch.
+      404:
+        description: Branch not found.
     """
     branch = storage.get(Branch, id=branch_id)
     if not branch:

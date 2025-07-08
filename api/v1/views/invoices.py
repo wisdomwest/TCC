@@ -21,6 +21,17 @@ def get_invoices():
 def get_invoice(invoice_id):
     """
     Retrieves a specific invoice.
+    ---
+    parameters:
+      - name: invoice_id
+        in: path
+        type: string
+        required: true
+    responses:
+      200:
+        description: The requested invoice.
+      404:
+        description: Invoice not found.
     """
     invoice = storage.get(Invoice, id=invoice_id)
     if not invoice:
