@@ -6,6 +6,7 @@ Contains the API endpoints for managing trucks.
 from flask import Blueprint, request, jsonify
 from models.tables import Truck, TruckStatus
 from models import storage
+from datetime import timedelta
 
 trucks_bp = Blueprint('trucks_bp', __name__)
 
@@ -13,6 +14,31 @@ trucks_bp = Blueprint('trucks_bp', __name__)
 def create_truck():
     """
     Creates a new truck.
+
+    ---
+    parameters:
+        - name: truck_number
+          in: body
+          type: string
+          required: true
+          description: The unique number of the truck.
+        - name: capacity_cubic_meters
+          in: body
+          type: float
+          required: false
+          default: 500.0
+          description: The capacity of the truck in cubic meters.
+        - name: current_branch_id
+          in: body
+          type: string
+          required: false
+          description: The ID of the branch where the truck is currently located.
+    responses:
+        201:
+            description: Truck created successfully.
+            
+        400:
+            description: Missing required truck number.
     """
     data = request.get_json()
     if not data or not data.get('truck_number'):
@@ -31,6 +57,12 @@ def create_truck():
 def get_trucks():
     """
     Retrieves all trucks.
+
+    ---
+    responses:
+        200:
+            description: A list of all trucks.
+            
     """
     trucks = storage.all(Truck).values()
     return jsonify([truck.to_dict() for truck in trucks])
@@ -39,6 +71,19 @@ def get_trucks():
 def get_truck(truck_id):
     """
     Retrieves a specific truck.
+    ---
+    parameters:
+        - name: truck_id
+          in: path
+          type: string
+          required: true
+          description: The ID of the truck to retrieve.
+    responses:
+        200:
+            description: The requested truck.
+            
+        404:
+            description: Truck not found.
     """
     truck = storage.get(Truck, id=truck_id)
     if not truck:
@@ -48,7 +93,32 @@ def get_truck(truck_id):
 @trucks_bp.route('/<truck_id>', methods=['PUT'])
 def update_truck(truck_id):
     """
-    Updates a truck's status or location.
+    Updates a truck's status or location
+    ---
+    parameters:
+        - name: truck_id
+          in: path
+          type: string
+          required: true
+          description: The ID of the truck to update.
+        - name: status
+          in: body
+          type: string
+          required: false
+          description: The new status of the truck (e.g., IDLE, IN_TRANSIT).
+        - name: current_branch_id
+          in: body
+          type: string
+          required: false
+          description: The ID of the branch where the truck is currently located.
+    responses:
+        200:
+            description: Truck updated successfully.
+            
+        404:
+            description: Truck not found.
+        400:
+            description: No data provided or invalid data.
     """
     truck = storage.get(Truck, id=truck_id)
     if not truck:
@@ -70,6 +140,18 @@ def update_truck(truck_id):
 def get_truck_statuses():
     """
     Retrieves the status of all trucks.
+
+    ---
+    parameters:
+        - name: status
+          in: query
+          type: string
+          required: false
+          description: Filter trucks by status
+    responses:
+        200:
+            description: A list of all trucks with their statuses.
+            
     """
     trucks = storage.all(Truck).values()
     return jsonify([{"id": truck.id, "truck_number": truck.truck_number, "status": truck.status.value} for truck in trucks])
@@ -78,6 +160,18 @@ def get_truck_statuses():
 def get_truck_usage():
     """
     Retrieves the usage of all trucks over a given period.
+    ---
+    parameters:
+      - name: days
+        in: query
+        type: integer
+        required: false
+        default: 7
+        description: The number of days to look back for usage statistics.
+    responses:
+        200:
+            description: A list of trucks with their usage statistics.
+            
     """
     days = request.args.get('days', 7, type=int)
     end_date = datetime.utcnow()

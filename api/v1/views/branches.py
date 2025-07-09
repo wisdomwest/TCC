@@ -13,6 +13,29 @@ branches_bp = Blueprint('branches_bp', __name__)
 def create_branch():
     """
     Creates a new branch.
+
+    ---
+    parameters:
+      - name: body
+        in: body
+        required: true
+        schema:
+          type: object
+          properties:
+            name:
+              type: string
+              description: The name of the branch.
+            is_hq:
+              type: boolean
+              description: Whether the branch is a headquarters.
+
+    responses:
+      201:
+        description: Branch created successfully.
+      400:
+        description: Missing branch name.
+      500:
+        description: Internal server error.
     """
     data = request.get_json()
     if not data or not data.get('name'):
@@ -30,6 +53,14 @@ def create_branch():
 def get_branches():
     """
     Retrieves all branches.
+
+    ---
+
+    responses:
+        200:
+            description: A list of all branches.
+        500:
+            description: Internal server error.
     """
     branches = storage.all(Branch).values()
     return jsonify([branch.to_dict() for branch in branches])

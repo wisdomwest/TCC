@@ -13,6 +13,11 @@ dispatches_bp = Blueprint('dispatches_bp', __name__)
 def get_dispatches():
     """
     Retrieves all dispatches.
+
+    ---
+    responses:
+      200:
+        description: A list of all dispatches.
     """
     dispatches = storage.all(Dispatch).values()
     return jsonify([dispatch.to_dict() for dispatch in dispatches])

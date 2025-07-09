@@ -13,6 +13,11 @@ invoices_bp = Blueprint('invoices_bp', __name__)
 def get_invoices():
     """
     Retrieves all invoices.
+
+    ---
+    responses:
+      200:
+        description: A list of all invoices.
     """
     invoices = storage.all(Invoice).values()
     return jsonify([invoice.to_dict() for invoice in invoices])

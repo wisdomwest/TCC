@@ -14,6 +14,31 @@ users_bp = Blueprint('users_bp', __name__)
 def register_user():
     """
     Registers a new user.
+    ---
+    parameters:
+      - name: body
+        in: body
+        required: true
+        schema:
+          type: object
+          properties:
+            username:
+              type: string
+            password:
+              type: string
+            role:
+              type: string
+              enum: [ADMIN, STAFF]
+            branch_id:
+              type: string
+
+    responses:
+        201:
+            description: User created successfully.
+        400:
+            description: Missing username or password.
+        409:
+            description: User already exists.
     """
     data = request.get_json()
     if not data or not data.get('username') or not data.get('password'):

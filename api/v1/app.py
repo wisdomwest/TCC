@@ -4,6 +4,7 @@ Main application file for the TCC API.
 """
 
 from flask import Flask
+from flasgger import Swagger
 from api.v1.views.users import users_bp
 from api.v1.views.branches import branches_bp
 from api.v1.views.trucks import trucks_bp
@@ -29,4 +30,4 @@ def teardown_db(exception):
     storage.close()
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000)
+    app.run(host="0.0.0.0", port=5000, debug=True)

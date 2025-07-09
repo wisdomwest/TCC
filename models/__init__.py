@@ -7,3 +7,5 @@ from models.engine.db import DBStorage
 
 storage_t = "db"
 storage = DBStorage()
+storage.reload()
+
