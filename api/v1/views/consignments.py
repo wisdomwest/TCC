@@ -7,14 +7,14 @@ from flask import Blueprint, request, jsonify
 from models.tables import Consignment, Invoice, Branch, Truck, Dispatch, ConsignmentStatus, TruckStatus
 from models import storage
 from sqlalchemy import func
-from datetime import datetime
+from datetime import datetime, timedelta
 
 consignments_bp = Blueprint('consignments_bp', __name__)
 
 def calculate_charge(volume, destination):
     return volume * 100
 
-@consignments_bp.route('/', methods=['POST'])
+@consignments_bp.route('', methods=['POST'])
 def create_consignment():
     """
     Creates a new consignment and an associated invoice.
@@ -85,7 +85,7 @@ def create_consignment():
 
     return jsonify(new_consignment.to_dict()), 201
 
-@consignments_bp.route('/', methods=['GET'])
+@consignments_bp.route('', methods=['GET'])
 def get_consignments():
     """
     Retrieves all consignments.
@@ -160,7 +160,8 @@ def get_consignment_stats():
     if not destination:
         return jsonify({"error": "Missing destination"}), 400
 
-    consignments = storage.all(Consignment, destination_address=destination).values()
+    all_consignments = storage.all(Consignment).values()
+    consignments = [c for c in all_consignments if c.destination_address == destination]
     total_volume = sum(c.volume_cubic_meters for c in consignments)
     total_revenue = sum(c.invoice.amount for c in consignments if c.invoice)
 
@@ -191,21 +192,15 @@ def get_average_wait_time():
             total_wait_time += wait_time
             dispatched_consignments += 1
     
-    average_wait_time = total_wait_time / dispatched_consignments if dispatched_consignments > 0 else 0
+    average_wait_time = total_wait_time / dispatched_consignments if dispatched_consignments > 0 else timedelta(0)
 
     return jsonify({"average_wait_time_seconds": average_wait_time.total_seconds()})
 
 def check_and_dispatch_truck(branch_id, destination_address):
-    """
-    Checks if the total volume of consignments for a specific destination
-    at a given branch is enough to dispatch a truck, and dispatches one if so.
-
-    Args:
-        branch_id (str): The ID of the origin branch.
-        destination_address (str): The destination address for the consignments.
-    """
+    print(f"DEBUG: check_and_dispatch_truck called for branch_id={branch_id}, destination_address={destination_address}")
     branch = storage.get(Branch, id=branch_id)
     if not branch:
+        print(f"DEBUG: Branch {branch_id} not found.")
         return
 
     # Get all consignments
@@ -218,11 +213,14 @@ def check_and_dispatch_truck(branch_id, destination_address):
             c.destination_address == destination_address and
             c.status == ConsignmentStatus.AWAITING_DISPATCH
     ]
+    print(f"DEBUG: Found {len(consignments_for_destination)} consignments for dispatch criteria.")
 
     # Now compute the volume
     total_volume = sum(c.volume_cubic_meters for c in consignments_for_destination)
+    print(f"DEBUG: Total volume for {destination_address} at {branch_id}: {total_volume} cubic meters.")
 
     if total_volume >= 500:
+        print(f"DEBUG: Volume threshold (500m³) met. Total volume: {total_volume}.")
         all_trucks = storage.all(Truck).values()
         # Find an available truck at the branch
         available_truck = [
@@ -232,7 +230,9 @@ def check_and_dispatch_truck(branch_id, destination_address):
         ]
         if available_truck:
             available_truck = available_truck[0]
+            print(f"DEBUG: Found available truck: {available_truck.truck_number} (ID: {available_truck.id}).")
         else:
+            print("DEBUG: No available truck found at this branch.")
             # If no available truck, we cannot dispatch
             return
 
@@ -244,10 +244,16 @@ def check_and_dispatch_truck(branch_id, destination_address):
             )
             storage.new(new_dispatch)
             storage.save()
+            print(f"DEBUG: New dispatch created with ID: {new_dispatch.id}.")
 
             # Update consignments and truck
             for consignment in consignments_for_destination:
                 consignment.dispatch_id = new_dispatch.id
                 consignment.status = ConsignmentStatus.DISPATCHED
+                print(f"DEBUG: Consignment {consignment.id} status updated to DISPATCHED.")
             available_truck.status = TruckStatus.IN_TRANSIT
+            print(f"DEBUG: Truck {available_truck.truck_number} status updated to IN_TRANSIT.")
             storage.save()
+            print("DEBUG: All changes saved.")
+    else:
+        print(f"DEBUG: Volume threshold (500m³) not met. Current volume: {total_volume}.")

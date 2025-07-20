@@ -4,35 +4,41 @@ Contains the API endpoints for managing trucks.
 """
 
 from flask import Blueprint, request, jsonify
+from flask_jwt_extended import jwt_required
+from api.v1.views.auth import login_required, role_required
 from models.tables import Truck, TruckStatus
 from models import storage
-from datetime import timedelta
+from datetime import datetime, timedelta
 
 trucks_bp = Blueprint('trucks_bp', __name__)
 
-@trucks_bp.route('/', methods=['POST'])
+@trucks_bp.route('', methods=['POST'])
+@jwt_required()
+@role_required('MANAGER')
 def create_truck():
     """
     Creates a new truck.
 
     ---
     parameters:
-        - name: truck_number
-          in: body
-          type: string
-          required: true
-          description: The unique number of the truck.
-        - name: capacity_cubic_meters
-          in: body
-          type: float
-          required: false
-          default: 500.0
-          description: The capacity of the truck in cubic meters.
-        - name: current_branch_id
-          in: body
-          type: string
-          required: false
-          description: The ID of the branch where the truck is currently located.
+      - name: body
+        in: body
+        required: true
+        schema:
+          type: object
+          required:
+            - truck_number
+          properties:
+            truck_number:
+              type: string
+              description: The unique number of the truck.
+            capacity_cubic_meters:
+              type: float
+              description: The capacity of the truck in cubic meters.
+              default: 500.0
+            current_branch_id:
+              type: string
+              description: The ID of the branch where the truck is currently located.
     responses:
         201:
             description: Truck created successfully.
@@ -53,7 +59,7 @@ def create_truck():
     storage.save()
     return jsonify(new_truck.to_dict()), 201
 
-@trucks_bp.route('/', methods=['GET'])
+@trucks_bp.route('', methods=['GET'])
 def get_trucks():
     """
     Retrieves all trucks.
@@ -212,6 +218,6 @@ def get_average_idle_time():
             total_idle_time += idle_time
             total_trucks += 1
 
-    average_idle_time = total_idle_time / total_trucks if total_trucks > 0 else 0
+    average_idle_time = total_idle_time / total_trucks if total_trucks > 0 else timedelta(0)
 
     return jsonify({"average_idle_time_seconds": average_idle_time.total_seconds()})

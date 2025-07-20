@@ -4,12 +4,14 @@ Contains the API endpoints for managing branches.
 """
 
 from flask import Blueprint, request, jsonify
+from flask_jwt_extended import jwt_required
+from api.v1.views.auth import login_required, role_required
 from models.tables import Branch
 from models import storage
 
 branches_bp = Blueprint('branches_bp', __name__)
 
-@branches_bp.route('/', methods=['POST'])
+@branches_bp.route('', methods=['POST'])
 def create_branch():
     """
     Creates a new branch.
@@ -49,7 +51,7 @@ def create_branch():
     storage.save()
     return jsonify(new_branch.to_dict()), 201
 
-@branches_bp.route('/', methods=['GET'])
+@branches_bp.route('', methods=['GET'])
 def get_branches():
     """
     Retrieves all branches.

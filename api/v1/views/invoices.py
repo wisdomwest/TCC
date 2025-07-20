@@ -9,7 +9,7 @@ from models import storage
 
 invoices_bp = Blueprint('invoices_bp', __name__)
 
-@invoices_bp.route('/', methods=['GET'])
+@invoices_bp.route('', methods=['GET'])
 def get_invoices():
     """
     Retrieves all invoices.

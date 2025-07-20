@@ -9,7 +9,7 @@ from models import storage
 
 dispatches_bp = Blueprint('dispatches_bp', __name__)
 
-@dispatches_bp.route('/', methods=['GET'])
+@dispatches_bp.route('', methods=['GET'])
 def get_dispatches():
     """
     Retrieves all dispatches.

@@ -28,7 +28,7 @@ class ConsignmentStatus(enum.Enum):
 class User(BaseModel, Base):
     __tablename__ = 'users'
     username = Column(String(80), unique=True, nullable=False)
-    password_hash = Column(String(128), nullable=False)
+    password_hash = Column(String(256), nullable=False)
     role = Column(Enum(UserRole), nullable=False, default=UserRole.STAFF)
     branch_id = Column(String(60), ForeignKey('branches.id'), nullable=False)
 
