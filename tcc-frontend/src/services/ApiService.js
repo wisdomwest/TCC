@@ -28,6 +28,9 @@ const ApiService = {
   getConsignments: () => {
     return axios.get(API_URL + '/consignments', { headers: getAuthHeader() });
   },
+  getConsignment: (id) => {
+    return axios.get(API_URL + '/consignments/' + id, { headers: getAuthHeader() });
+  },
   getConsignmentStatus: (id) => {
     return axios.get(API_URL + '/consignments/status/' + id, { headers: getAuthHeader() });
   },

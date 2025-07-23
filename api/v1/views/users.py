@@ -6,7 +6,7 @@ Contains the API endpoints for managing users.
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import create_access_token, jwt_required
 from api.v1.views.auth import login_required, role_required
-from models.tables import User, UserRole
+from models.tables import User, UserRole, Branch
 from models import storage
 from werkzeug.security import generate_password_hash, check_password_hash
 
@@ -43,8 +43,13 @@ def register_user():
             description: User already exists.
     """
     data = request.get_json()
-    if not data or not data.get('username') or not data.get('password'):
-        return jsonify({"error": "Missing username or password"}), 400
+    if not data or not data.get('username') or not data.get('password') or not data.get('branch_id'):
+        return jsonify({"error": "Missing required fields"}), 400
+
+    # Check if the branch exists
+    branch = storage.get(Branch, id=data['branch_id'])
+    if not branch:
+        return jsonify({"error": "Branch not found"}), 404
 
     all_users = storage.all(User).values()
     if any(user.username == data['username'] for user in all_users):
