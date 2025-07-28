@@ -22,7 +22,7 @@ class DBStorage:
     def __init__(self):
         """Instantiate a DBStorage object"""
         MYSQL_USER = "root"
-        MYSQL_PWD = "Koomesfamily%402"
+        MYSQL_PWD = getenv("MYSQL_PWD")
         MYSQL_HOST = "localhost"
         MYSQL_DB = "TEST"
         ENV = "test"
