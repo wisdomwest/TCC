@@ -46,6 +46,7 @@ const TruckStatusUpdate = ({ truck, open, onClose, onUpdate }) => {
         </Typography>
         
         {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+        }
         
         <FormControl fullWidth>
           <InputLabel>Status</InputLabel>

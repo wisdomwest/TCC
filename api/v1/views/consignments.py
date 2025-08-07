@@ -118,6 +118,50 @@ def get_consignment(consignment_id):
         return jsonify({"error": "Consignment not found"}), 404
     return jsonify(consignment.to_dict())
 
+@consignments_bp.route('/<consignment_id>', methods=['PUT'])
+def update_consignment(consignment_id):
+    """
+    Updates a consignment's status.
+    ---
+    parameters:
+      - name: consignment_id
+        in: path
+        type: string
+        required: true
+      - name: body
+        in: body
+        required: true
+        schema:
+          type: object
+          properties:
+            status:
+              type: string
+              enum: [AWAITING_DISPATCH, DISPATCHED, DELIVERED]
+    responses:
+      200:
+        description: Consignment updated successfully.
+      404:
+        description: Consignment not found.
+      400:
+        description: No data provided or invalid status.
+    """
+    consignment = storage.get(Consignment, id=consignment_id)
+    if not consignment:
+        return jsonify({"error": "Consignment not found"}), 404
+
+    data = request.get_json()
+    if not data:
+        return jsonify({"error": "No data provided"}), 400
+
+    if 'status' in data:
+        try:
+            consignment.status = ConsignmentStatus(data['status'])
+        except ValueError:
+            return jsonify({"error": "Invalid status"}), 400
+    
+    storage.save()
+    return jsonify(consignment.to_dict())
+
 @consignments_bp.route('/status/<consignment_id>', methods=['GET'])
 def get_consignment_status(consignment_id):
     """
