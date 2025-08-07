@@ -79,6 +79,11 @@ const ApiService = {
   getAverageIdleTime: () => {
     return axios.get(API_URL + '/trucks/average_idle_time', { headers: getAuthHeader() });
   },
+  
+  // Consignment status update
+  updateConsignmentStatus: (id, data) => {
+    return axios.put(API_URL + '/consignments/' + id, data, { headers: getAuthHeader() });
+  },
 
   // Users
   getUsers: () => {
@@ -92,6 +97,16 @@ const ApiService = {
   },
   deleteUser: (id) => {
     return axios.delete(API_URL + '/users/' + id, { headers: getAuthHeader() });
+  },
+  
+  // Get current user details
+  getCurrentUserDetails: () => {
+    return axios.get(API_URL + '/users/me', { headers: getAuthHeader() });
+  },
+  
+  // Get branch details
+  getBranch: (id) => {
+    return axios.get(API_URL + '/branches/' + id, { headers: getAuthHeader() });
   },
 };
 
